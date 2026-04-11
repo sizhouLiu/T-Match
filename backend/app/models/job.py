@@ -17,6 +17,7 @@ class Job(Base):
     __tablename__ = "jobs"
 
     id = Column(Integer, primary_key=True, index=True)
+    position_id = Column(String(100), unique=True, index=True)  # 求职方舟职位ID
     # 基本信息
     title = Column(String(255), nullable=False, index=True)
     company = Column(String(255), nullable=False, index=True)
