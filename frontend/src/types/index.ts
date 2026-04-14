@@ -8,6 +8,7 @@ export interface User {
 
 export interface Job {
   id: number
+  position_id: string | null
   title: string
   company: string
   location: string | null
@@ -16,6 +17,15 @@ export interface Job {
   salary_range: string | null
   job_type: string | null
   source_url: string | null
+  update_date: string | null
+  company_type: string | null
+  industry: string | null
+  credit_score: string | null
+  match_score: string | null
+  education: string | null
+  grade: string | null
+  major: string | null
+  detail_url: string | null
   created_at: string
 }
 

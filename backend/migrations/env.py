@@ -1,4 +1,5 @@
 import os
+import sys
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
@@ -7,8 +8,7 @@ from sqlalchemy import pool
 from alembic import context
 
 # Import models and Base
-import sys
-sys.path.insert(0, "/app")
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from app.database import Base
 from app.models import *  # noqa: F401, F403 - Import all models
 
@@ -16,8 +16,8 @@ from app.models import *  # noqa: F401, F403 - Import all models
 # access to the values within the .ini file in use.
 config = context.config
 
-# Set database URL from environment variable
-db_url = os.environ.get("DATABASE_URL_SYNC", "postgresql://postgres:postgres@db:5432/tmatch")
+# Set database URL from environment variable or default to localhost
+db_url = os.environ.get("DATABASE_URL_SYNC", "postgresql://postgres:postgres@localhost:5432/tmatch")
 config.set_main_option("sqlalchemy.url", db_url)
 
 # Interpret the config file for Python logging.
