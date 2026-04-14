@@ -36,3 +36,6 @@ def scrape_jobs_task():
     """爬取职位数据任务"""
     result = scrape_jobs()
     return result
+
+def test2():
+    pass
