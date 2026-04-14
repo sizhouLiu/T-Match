@@ -39,3 +39,6 @@ def scrape_jobs_task():
 
 def test():
     pass
+
+def test2():
+    pass

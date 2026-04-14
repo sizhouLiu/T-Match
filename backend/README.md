@@ -11,8 +11,6 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 uv pip install -e .
 ```
 
-## Run
-
 ```bash
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
