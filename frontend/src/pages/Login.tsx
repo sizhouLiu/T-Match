@@ -44,7 +44,7 @@ const Login = () => {
       margin: '60px auto',
       padding: '20px',
     }}>
-      <Card style={{ background: '#1a1a1a', border: '1px solid #303030' }}>
+      <Card style={{ background: '#111113', border: '1px solid #1e1e22' }}>
         <Title level={2} style={{ color: '#fff', textAlign: 'center', marginBottom: '32px' }}>
           登录
         </Title>
@@ -61,35 +61,35 @@ const Login = () => {
               { type: 'email', message: '请输入有效的邮箱地址' },
             ]}
           >
-            <Input 
-              prefix={<UserOutlined />} 
-              placeholder="邮箱" 
-              style={{ background: '#0e0e10', border: '1px solid #303030', color: '#fff' }}
+            <Input
+              prefix={<UserOutlined />}
+              placeholder="邮箱"
+              style={{ background: '#0a0a0a', border: '1px solid #1e1e22', color: '#fff' }}
             />
           </Form.Item>
           <Form.Item
             name="password"
             rules={[{ required: true, message: '请输入密码' }]}
           >
-            <Input.Password 
-              prefix={<LockOutlined />} 
-              placeholder="密码" 
-              style={{ background: '#0e0e10', border: '1px solid #303030', color: '#fff' }}
+            <Input.Password
+              prefix={<LockOutlined />}
+              placeholder="密码"
+              style={{ background: '#0a0a0a', border: '1px solid #1e1e22', color: '#fff' }}
             />
           </Form.Item>
           <Form.Item>
-            <Button 
-              type="primary" 
-              htmlType="submit" 
-              block 
+            <Button
+              type="primary"
+              htmlType="submit"
+              block
               loading={loginMutation.isPending}
             >
               登录
             </Button>
           </Form.Item>
         </Form>
-        <Paragraph style={{ textAlign: 'center', color: '#999' }}>
-          还没有账号？ <Link to="/register" style={{ color: '#1890ff' }}>立即注册</Link>
+        <Paragraph style={{ textAlign: 'center', color: '#a1a1aa' }}>
+          还没有账号？ <Link to="/register" style={{ color: '#3b82f6' }}>立即注册</Link>
         </Paragraph>
       </Card>
     </div>

@@ -48,3 +48,28 @@ export interface Resume {
   is_primary: number
   created_at: string
 }
+
+export interface CampusRecruitment {
+  id: number
+  recruitment_id: string | null
+  title: string
+  company: string
+  company_type: string | null
+  industry: string | null
+  location: string | null
+  education: string | null
+  grade: string | null
+  major: string | null
+  deadline: string | null
+  source_type: string | null
+  detail_url: string | null
+  credit_score: string | null
+  update_date: string | null
+  description: string | null
+  requirements: string | null
+  notice_url: string | null
+  apply_url: string | null
+  batch: string | null
+  referral_code: string | null
+  created_at: string
+}

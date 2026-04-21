@@ -6,6 +6,7 @@ import Register from './pages/Register'
 import Jobs from './pages/Jobs'
 import Resumes from './pages/Resumes'
 import Applications from './pages/Applications'
+import Campus from './pages/Campus'
 import { useAuthStore } from './stores/authStore'
 
 function App() {
@@ -22,10 +23,11 @@ function App() {
           path="resumes" 
           element={isAuthenticated ? <Resumes /> : <Navigate to="/login" />} 
         />
-        <Route 
-          path="applications" 
-          element={isAuthenticated ? <Applications /> : <Navigate to="/login" />} 
+        <Route
+          path="applications"
+          element={isAuthenticated ? <Applications /> : <Navigate to="/login" />}
         />
+        <Route path="campus" element={<Campus />} />
       </Route>
     </Routes>
   )

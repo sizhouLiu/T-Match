@@ -38,4 +38,9 @@ export const resumesApi = {
   delete: async (id: number): Promise<void> => {
     await api.delete(`/resumes/${id}`)
   },
+
+  aiOptimize: async (id: number): Promise<{ optimized_text: string }> => {
+    const response = await api.post<{ optimized_text: string }>(`/resumes/${id}/optimize`)
+    return response.data
+  },
 }

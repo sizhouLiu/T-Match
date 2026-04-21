@@ -37,8 +37,22 @@ def scrape_jobs_task():
     result = scrape_jobs()
     return result
 
-def test():
-    pass
 
-def test2():
-    pass
+@celery_app.task
+def scrape_campus_task():
+    """爬取校招数据任务"""
+    from app.utils.scraper_campus import scrape_campus
+    result = scrape_campus(demo_id="banking", direction="金融学专业", max_pages=2)
+    return result
+
+
+@celery_app.task
+def daily_sync_all_task():
+    """每日同步所有数据（职位+校招）"""
+    from app.utils.scraper_campus import scrape_campus
+
+    results = {
+        "jobs": scrape_jobs(),
+        "campus": scrape_campus(demo_id="banking", direction="金融学专业", max_pages=2),
+    }
+    return results

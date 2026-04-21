@@ -34,7 +34,7 @@ const Home = () => {
         <Title level={1} style={{ color: '#fff', marginBottom: '16px' }}>
           AI驱动的求职助手
         </Title>
-        <Paragraph style={{ fontSize: '18px', color: '#999' }}>
+        <Paragraph style={{ fontSize: '18px', color: '#a1a1aa' }}>
           用AI赋能求职，让找工作更简单
         </Paragraph>
         <div style={{ marginTop: '32px' }}>
@@ -54,7 +54,7 @@ const Home = () => {
             padding: '12px 32px',
             background: 'transparent',
             color: '#fff',
-            border: '1px solid #303030',
+            border: '1px solid #1e1e22',
             borderRadius: '6px',
             fontSize: '16px',
           }}>
@@ -66,10 +66,10 @@ const Home = () => {
       <Row gutter={[24, 24]}>
         {features.map((feature, index) => (
           <Col xs={24} sm={12} md={6} key={index}>
-            <Card 
-              style={{ 
-                background: '#1a1a1a', 
-                border: '1px solid #303030',
+            <Card
+              style={{
+                background: '#111113',
+                border: '1px solid #1e1e22',
                 textAlign: 'center',
                 height: '100%',
               }}
@@ -79,7 +79,7 @@ const Home = () => {
               <Title level={4} style={{ color: '#fff', marginBottom: '8px' }}>
                 {feature.title}
               </Title>
-              <Paragraph style={{ color: '#999', margin: 0 }}>
+              <Paragraph style={{ color: '#a1a1aa', margin: 0 }}>
                 {feature.description}
               </Paragraph>
             </Card>

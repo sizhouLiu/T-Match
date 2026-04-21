@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
-from app.routers import auth_router, jobs_router, resumes_router, scraper_router
+from app.routers import auth_router, jobs_router, resumes_router, scraper_router, campus_router
 from app.database import async_engine, Base
 
 
@@ -29,6 +29,7 @@ def create_app() -> FastAPI:
     app.include_router(jobs_router, prefix="/api")
     app.include_router(resumes_router, prefix="/api")
     app.include_router(scraper_router, prefix="/api")
+    app.include_router(campus_router, prefix="/api")
 
     @app.on_event("startup")
     async def startup():
