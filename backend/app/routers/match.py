@@ -25,7 +25,7 @@ async def match_resume_to_jobs(request: MatchRequest, db: AsyncSession = Depends
         raise HTTPException(status_code=400, detail="Must provide either resume_text or resume_id")
     if not query_text: raise HTTPException(status_code=400, detail="Query text is empty")
     try:
-        matches = await vector_service.hybrid_search(query_text, top_k=request.top_k)
+        matches = await vector_service.hybrid_search(query_text, top_k=request.top_k, use_rerank=request.use_rerank, db_session=db)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
     if not matches: return MatchResponse(results=[], query_time_ms=(time.time() - start_time) * 1000)

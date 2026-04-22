@@ -6,6 +6,7 @@ class MatchRequest(BaseModel):
     resume_text: Optional[str] = None
     resume_id: Optional[int] = None
     top_k: int = 20
+    use_rerank: bool = False
 
 class MatchResult(BaseModel):
     job: JobResponse

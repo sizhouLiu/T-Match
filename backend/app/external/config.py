@@ -7,6 +7,7 @@ class ExternalSettings(BaseSettings):
     TONGYI_EMBEDDING_MODEL: str = "text-embedding-v3"
     TONGYI_BASE_URL: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"
     TONGYI_CHAT_MODEL: str = "qwen-turbo"
+    TONGYI_RERANK_MODEL: str = "gte-rerank"
     OPENAI_API_KEY: str = ""
     OPENAI_EMBEDDING_MODEL: str = "text-embedding-3-small"
 
