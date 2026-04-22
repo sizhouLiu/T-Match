@@ -10,6 +10,7 @@ class ExternalSettings(BaseSettings):
     TONGYI_API_KEY: str = ""
     TONGYI_EMBEDDING_MODEL: str = "text-embedding-v3"
     TONGYI_BASE_URL: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+    TONGYI_CHAT_MODEL: str = "qwen-turbo"
 
     # OpenAI (fallback/alternative)
     OPENAI_API_KEY: str = ""

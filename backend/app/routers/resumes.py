@@ -22,6 +22,12 @@ async def create_resume(resume_data: ResumeCreate, user_id: int, db: AsyncSessio
     db.add(resume)
     await db.commit()
     await db.refresh(resume)
+
+    # 自动爬取简历专业相关岗位
+    if resume.original_text:
+        from app.tasks.ai_tasks import scrape_jobs_for_resume_task
+        scrape_jobs_for_resume_task.delay(resume.id)
+
     return resume
 
 
