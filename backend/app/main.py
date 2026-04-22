@@ -1,30 +1,15 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
+import logging
 from app.config import settings
 from app.routers import auth_router, jobs_router, resumes_router, scraper_router, match_router
 from app.services.milvus_client import ensure_collection
 
+logger = logging.getLogger(__name__)
 
 def create_app() -> FastAPI:
-    app = FastAPI(
-        title=settings.APP_NAME,
-        version=settings.APP_VERSION,
-        docs_url="/api/docs",
-        redoc_url="/api/redoc",
-        openapi_url="/api/openapi.json"
-    )
-
-    # CORS middleware
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=settings.get_cors_origins(),
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-
-    # Include routers
+    app = FastAPI(title=settings.APP_NAME, version=settings.APP_VERSION, docs_url="/api/docs", redoc_url="/api/redoc", openapi_url="/api/openapi.json")
+    app.add_middleware(CORSMiddleware, allow_origins=settings.get_cors_origins(), allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
     app.include_router(auth_router, prefix="/api")
     app.include_router(jobs_router, prefix="/api")
     app.include_router(resumes_router, prefix="/api")
@@ -33,11 +18,10 @@ def create_app() -> FastAPI:
 
     @app.on_event("startup")
     async def startup():
-        # Ensure Milvus collection exists
         try:
             ensure_collection()
         except Exception as e:
-            print(f"Failed to initialize Milvus collection: {e}")
+            logger.error(f"Failed to initialize Milvus collection: {e}")
 
     @app.get("/")
     async def root():
@@ -48,6 +32,5 @@ def create_app() -> FastAPI:
         return {"status": "healthy"}
 
     return app
-
 
 app = create_app()

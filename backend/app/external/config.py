@@ -1,18 +1,12 @@
-import os
 from functools import lru_cache
 from pydantic_settings import BaseSettings
 
 class ExternalSettings(BaseSettings):
-    # Embedding Provider Configuration
-    EMBEDDING_PROVIDER: str = "tongyi"  # tongyi, openai
-
-    # Tongyi (Aliyun DashScope)
+    EMBEDDING_PROVIDER: str = "tongyi"
     TONGYI_API_KEY: str = ""
     TONGYI_EMBEDDING_MODEL: str = "text-embedding-v3"
     TONGYI_BASE_URL: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"
     TONGYI_CHAT_MODEL: str = "qwen-turbo"
-
-    # OpenAI (fallback/alternative)
     OPENAI_API_KEY: str = ""
     OPENAI_EMBEDDING_MODEL: str = "text-embedding-3-small"
 
