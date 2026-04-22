@@ -2,7 +2,6 @@ from typing import List, Dict, Tuple, Any
 from abc import ABC, abstractmethod
 import httpx
 from .config import external_settings
-from pymilvus.model.sparse import BM25EmbeddingFunction
 
 class EmbeddingProvider(ABC):
     @abstractmethod
@@ -13,7 +12,6 @@ class EmbeddingProvider(ABC):
     def get_sparse_embeddings(self, texts: List[str]) -> List[Dict[int, float]]:
         """
         Generate sparse embeddings.
-        Default implementation uses local BM25 as it doesn't require an external API.
         """
         pass
 
@@ -54,19 +52,6 @@ class TongyiProvider(EmbeddingProvider):
             return [item["embedding"] for item in embeddings]
 
 
-# Singleton for BM25 to avoid reloading/re-fitting frequently
-_bm25_model = None
-
-def get_bm25_model():
-    global _bm25_model
-    if _bm25_model is None:
-        _bm25_model = BM25EmbeddingFunction()
-        # In a real production system, you'd load a pre-fitted corpus here:
-        # _bm25_model.load("bm25_model.json")
-        # For now, if no model is loaded, calling encode_documents will raise an error.
-        # So we'll provide a mock sparse vector fallback if it's not fitted.
-    return _bm25_model
-
 class HybridEmbeddingService:
     """Service that orchestrates dense and sparse embedding generation."""
 
@@ -91,26 +76,15 @@ class HybridEmbeddingService:
     async def generate_hybrid_embeddings(self, texts: List[str]) -> Tuple[List[List[float]], List[Any]]:
         """Generate both dense and sparse embeddings concurrently where possible."""
         dense_vectors = await self.dense_provider.get_dense_embeddings(texts)
-
-        try:
-            bm25 = get_bm25_model()
-            sparse_vectors = bm25.encode_documents(texts)
-        except Exception:
-            # Fallback if BM25 is not fitted or fails
-            sparse_vectors = self._get_mock_sparse(texts)
-
+        # Using mock sparse until a real model is configured
+        sparse_vectors = self._get_mock_sparse(texts)
         return dense_vectors, sparse_vectors
 
     async def generate_query_hybrid_embeddings(self, texts: List[str]) -> Tuple[List[List[float]], List[Any]]:
         """Generate embeddings for query text."""
         dense_vectors = await self.dense_provider.get_dense_embeddings(texts)
-
-        try:
-            bm25 = get_bm25_model()
-            sparse_vectors = bm25.encode_queries(texts)
-        except Exception:
-            sparse_vectors = self._get_mock_sparse(texts)
-
+        # Using mock sparse until a real model is configured
+        sparse_vectors = self._get_mock_sparse(texts)
         return dense_vectors, sparse_vectors
 
 # Global instance
