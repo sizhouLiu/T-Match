@@ -61,31 +61,11 @@ class HybridEmbeddingService:
         if self.provider_name == "tongyi":
             self.dense_provider = TongyiProvider()
         else:
-            # Fallback or stub
             self.dense_provider = TongyiProvider()
 
-    def _get_mock_sparse(self, texts: List[str]) -> List[Dict[int, float]]:
-        # Mock sparse vectors (just `{0: 1.0}`) to allow Milvus insertion without errors
-        # when BM25 is not yet fitted.
-        results = []
-        for _ in texts:
-            # Milvus expects a dict {index: weight} or scipy csr_matrix for sparse vectors
-            results.append({0: 1.0})
-        return results
-
-    async def generate_hybrid_embeddings(self, texts: List[str]) -> Tuple[List[List[float]], List[Any]]:
-        """Generate both dense and sparse embeddings concurrently where possible."""
-        dense_vectors = await self.dense_provider.get_dense_embeddings(texts)
-        # Using mock sparse until a real model is configured
-        sparse_vectors = self._get_mock_sparse(texts)
-        return dense_vectors, sparse_vectors
-
-    async def generate_query_hybrid_embeddings(self, texts: List[str]) -> Tuple[List[List[float]], List[Any]]:
-        """Generate embeddings for query text."""
-        dense_vectors = await self.dense_provider.get_dense_embeddings(texts)
-        # Using mock sparse until a real model is configured
-        sparse_vectors = self._get_mock_sparse(texts)
-        return dense_vectors, sparse_vectors
+    async def get_dense_embeddings(self, texts: List[str]) -> List[List[float]]:
+        """Generate dense embeddings via the configured provider."""
+        return await self.dense_provider.get_dense_embeddings(texts)
 
 # Global instance
 embedding_service = HybridEmbeddingService()

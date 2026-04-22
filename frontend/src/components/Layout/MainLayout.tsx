@@ -15,6 +15,7 @@ const MainLayout = () => {
     { key: '/jobs', label: '职位列表', path: '/jobs' },
     { key: '/resumes', label: '我的简历', path: '/resumes' },
     { key: '/applications', label: '投递记录', path: '/applications' },
+    { key: '/match', label: 'AI匹配', path: '/match' },
   ]
 
   return (

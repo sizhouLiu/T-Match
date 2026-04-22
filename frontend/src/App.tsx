@@ -6,6 +6,7 @@ import Register from './pages/Register'
 import Jobs from './pages/Jobs'
 import Resumes from './pages/Resumes'
 import Applications from './pages/Applications'
+import Match from './pages/Match'
 import { useAuthStore } from './stores/authStore'
 
 function App() {
@@ -22,9 +23,13 @@ function App() {
           path="resumes" 
           element={isAuthenticated ? <Resumes /> : <Navigate to="/login" />} 
         />
-        <Route 
-          path="applications" 
-          element={isAuthenticated ? <Applications /> : <Navigate to="/login" />} 
+        <Route
+          path="applications"
+          element={isAuthenticated ? <Applications /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="match"
+          element={isAuthenticated ? <Match /> : <Navigate to="/login" />}
         />
       </Route>
     </Routes>

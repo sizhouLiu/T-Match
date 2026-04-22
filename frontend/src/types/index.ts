@@ -48,3 +48,13 @@ export interface Resume {
   is_primary: number
   created_at: string
 }
+
+export interface MatchResult {
+  job: Job;
+  score: number;
+}
+
+export interface MatchResponse {
+  results: MatchResult[];
+  query_time_ms: number;
+}
