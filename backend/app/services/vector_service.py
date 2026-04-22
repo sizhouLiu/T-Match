@@ -25,9 +25,15 @@ class VectorService:
         client.insert(collection_name=settings.MILVUS_COLLECTION_NAME, data=data)
 
     @staticmethod
-    def delete_job_vector(job_db_id: int) -> None:
+    def insert_job_vector_sync(job_db_id: int, position_id: str, text: str) -> None:
+        dense_vectors = embedding_service.get_dense_embeddings_sync([text])
         client = milvus_conn.get_client()
-        client.delete(collection_name=settings.MILVUS_COLLECTION_NAME, filter=f"job_db_id == {job_db_id}")
+        data = [{"job_db_id": job_db_id, "position_id": position_id or "", "text": text, "dense_vector": dense_vectors[0]}]
+        client.insert(collection_name=settings.MILVUS_COLLECTION_NAME, data=data)
+
+    @staticmethod
+    def delete_job_vector(job_db_id: int) -> None:
+        milvus_conn.get_client().delete(collection_name=settings.MILVUS_COLLECTION_NAME, filter=f"job_db_id == {job_db_id}")
 
     @staticmethod
     async def hybrid_search(query_text: str, top_k: int = None) -> List[Dict[str, Any]]:
@@ -38,10 +44,7 @@ class VectorService:
         sparse_search_req = AnnSearchRequest(data=[query_text], anns_field="sparse_vector", param={"metric_type": "BM25"}, limit=top_k)
         ranker = WeightedRanker(settings.VECTOR_SEARCH_DENSE_WEIGHT, settings.VECTOR_SEARCH_SPARSE_WEIGHT)
         results = client.hybrid_search(collection_name=settings.MILVUS_COLLECTION_NAME, reqs=[dense_search_req, sparse_search_req], ranker=ranker, limit=top_k, output_fields=["job_db_id", "position_id"])
-        matches = []
-        if results and len(results) > 0:
-            for hit in results[0]:
-                matches.append({"job_db_id": hit.entity.get("job_db_id"), "position_id": hit.entity.get("position_id"), "score": hit.distance})
-        return matches
+        if not results or not results[0]: return []
+        return [{"job_db_id": hit.entity.get("job_db_id"), "position_id": hit.entity.get("position_id"), "score": hit.distance} for hit in results[0]]
 
 vector_service = VectorService()
