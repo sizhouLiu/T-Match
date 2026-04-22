@@ -7,6 +7,7 @@ from app.database import get_db
 from app.schemas import JobCreate, JobResponse, JobApplicationCreate, JobApplicationResponse, JobApplicationUpdate
 from app.models import Job, JobApplication
 from app.routers.auth import create_access_token
+from app.tasks.ai_tasks import encode_job_vector_task
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
 
@@ -23,6 +24,8 @@ async def create_job(job_data: JobCreate, db: AsyncSession = Depends(get_db)):
     db.add(job)
     await db.commit()
     await db.refresh(job)
+    # Trigger encoding task
+    encode_job_vector_task.delay(job.id)
     return job
 
 
@@ -40,10 +43,12 @@ async def create_jobs_batch(jobs_data: List[JobCreate], db: AsyncSession = Depen
             job = Job(**job_data.model_dump())
             db.add(job)
             jobs.append(job)
-    
+
     await db.commit()
     for job in jobs:
         await db.refresh(job)
+        # Trigger encoding task for each new job
+        encode_job_vector_task.delay(job.id)
     return jobs
 
 

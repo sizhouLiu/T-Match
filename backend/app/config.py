@@ -35,6 +35,15 @@ class Settings(BaseSettings):
             return [origin.strip() for origin in self.CORS_ORIGINS.split(",")]
         return self.CORS_ORIGINS
     
+    # Milvus
+    MILVUS_URI: str = "http://localhost:19530"
+    MILVUS_COLLECTION_NAME: str = "job_vectors"
+    MILVUS_DENSE_DIM: int = 1024  # text-embedding-v3 dimension. If using text-embedding-3-small, use 1536
+
+    VECTOR_SEARCH_TOP_K: int = 20
+    VECTOR_SEARCH_DENSE_WEIGHT: float = 0.6
+    VECTOR_SEARCH_SPARSE_WEIGHT: float = 0.4
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

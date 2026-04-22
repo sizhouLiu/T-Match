@@ -2,8 +2,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
-from app.routers import auth_router, jobs_router, resumes_router, scraper_router
+from app.routers import auth_router, jobs_router, resumes_router, scraper_router, match_router
 from app.database import async_engine, Base
+from app.services.milvus_client import ensure_collection
 
 
 def create_app() -> FastAPI:
@@ -29,11 +30,18 @@ def create_app() -> FastAPI:
     app.include_router(jobs_router, prefix="/api")
     app.include_router(resumes_router, prefix="/api")
     app.include_router(scraper_router, prefix="/api")
+    app.include_router(match_router, prefix="/api")
 
     @app.on_event("startup")
     async def startup():
         async with async_engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
+
+        # Ensure Milvus collection exists
+        try:
+            ensure_collection()
+        except Exception as e:
+            print(f"Failed to initialize Milvus collection: {e}")
 
     @app.get("/")
     async def root():
