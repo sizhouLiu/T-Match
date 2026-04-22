@@ -101,6 +101,28 @@ services:
       - ./backend:/app
     command: celery -A app.tasks worker --loglevel=info
 
+  celery_beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@db:5432/${DB_NAME:-tmatch}
+      DATABASE_URL_SYNC: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@db:5432/${DB_NAME:-tmatch}
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      SECRET_KEY: ${SECRET_KEY:-your-super-secret-key-change-in-production}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    command: celery -A app.tasks beat --loglevel=info
+
   frontend:
     build:
       context: ./frontend

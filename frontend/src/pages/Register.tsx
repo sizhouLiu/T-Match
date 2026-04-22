@@ -37,7 +37,7 @@ const Register = () => {
       margin: '60px auto',
       padding: '20px',
     }}>
-      <Card style={{ background: '#1a1a1a', border: '1px solid #303030' }}>
+      <Card style={{ background: '#111113', border: '1px solid #1e1e22' }}>
         <Title level={2} style={{ color: '#fff', textAlign: 'center', marginBottom: '32px' }}>
           注册
         </Title>
@@ -50,10 +50,10 @@ const Register = () => {
           <Form.Item
             name="username"
           >
-            <Input 
-              prefix={<UserOutlined />} 
-              placeholder="用户名（可选）" 
-              style={{ background: '#0e0e10', border: '1px solid #303030', color: '#fff' }}
+            <Input
+              prefix={<UserOutlined />}
+              placeholder="用户名（可选）"
+              style={{ background: '#0a0a0a', border: '1px solid #1e1e22', color: '#fff' }}
             />
           </Form.Item>
           <Form.Item
@@ -63,10 +63,10 @@ const Register = () => {
               { type: 'email', message: '请输入有效的邮箱地址' },
             ]}
           >
-            <Input 
-              prefix={<MailOutlined />} 
-              placeholder="邮箱" 
-              style={{ background: '#0e0e10', border: '1px solid #303030', color: '#fff' }}
+            <Input
+              prefix={<MailOutlined />}
+              placeholder="邮箱"
+              style={{ background: '#0a0a0a', border: '1px solid #1e1e22', color: '#fff' }}
             />
           </Form.Item>
           <Form.Item
@@ -76,10 +76,10 @@ const Register = () => {
               { min: 6, message: '密码至少6位' },
             ]}
           >
-            <Input.Password 
-              prefix={<LockOutlined />} 
-              placeholder="密码" 
-              style={{ background: '#0e0e10', border: '1px solid #303030', color: '#fff' }}
+            <Input.Password
+              prefix={<LockOutlined />}
+              placeholder="密码"
+              style={{ background: '#0a0a0a', border: '1px solid #1e1e22', color: '#fff' }}
             />
           </Form.Item>
           <Form.Item
@@ -97,25 +97,25 @@ const Register = () => {
               }),
             ]}
           >
-            <Input.Password 
-              prefix={<LockOutlined />} 
-              placeholder="确认密码" 
-              style={{ background: '#0e0e10', border: '1px solid #303030', color: '#fff' }}
+            <Input.Password
+              prefix={<LockOutlined />}
+              placeholder="确认密码"
+              style={{ background: '#0a0a0a', border: '1px solid #1e1e22', color: '#fff' }}
             />
           </Form.Item>
           <Form.Item>
-            <Button 
-              type="primary" 
-              htmlType="submit" 
-              block 
+            <Button
+              type="primary"
+              htmlType="submit"
+              block
               loading={registerMutation.isPending}
             >
               注册
             </Button>
           </Form.Item>
         </Form>
-        <Paragraph style={{ textAlign: 'center', color: '#999' }}>
-          已有账号？ <Link to="/login" style={{ color: '#1890ff' }}>立即登录</Link>
+        <Paragraph style={{ textAlign: 'center', color: '#a1a1aa' }}>
+          已有账号？ <Link to="/login" style={{ color: '#3b82f6' }}>立即登录</Link>
         </Paragraph>
       </Card>
     </div>

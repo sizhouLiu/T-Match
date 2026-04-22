@@ -47,6 +47,17 @@ def scrape_jobs_task():
     return scrape_jobs()
 
 @celery_app.task
+def scrape_campus_task():
+    from app.utils.scraper_campus import scrape_campus
+    return scrape_campus()
+
+@celery_app.task
+def daily_sync_all_task():
+    jobs_result = scrape_jobs_task()
+    campus_result = scrape_campus_task()
+    return {"jobs": jobs_result, "campus": campus_result}
+
+@celery_app.task
 def scrape_jobs_for_resume_task(resume_id: int):
     with sync_session_maker() as session:
         if not (resume := session.get(Resume, resume_id)): return {"resume_id": resume_id, "status": "failed", "error": "Resume not found"}

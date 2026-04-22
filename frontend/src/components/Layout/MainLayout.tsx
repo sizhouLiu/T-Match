@@ -13,18 +13,19 @@ const MainLayout = () => {
   const navItems = [
     { key: '/', label: '首页', path: '/' },
     { key: '/jobs', label: '职位列表', path: '/jobs' },
+    { key: '/campus', label: '校招信息', path: '/campus' },
     { key: '/resumes', label: '我的简历', path: '/resumes' },
     { key: '/applications', label: '投递记录', path: '/applications' },
     { key: '/match', label: 'AI匹配', path: '/match' },
   ]
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
-      <Header style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        background: '#141414',
-        borderBottom: '1px solid #27272a',
+    <Layout style={{ minHeight: '100vh', background: '#0a0a0a' }}>
+      <Header style={{
+        display: 'flex',
+        alignItems: 'center',
+        background: '#0a0a0a',
+        borderBottom: '1px solid #1e1e22',
         position: 'sticky',
         top: 0,
         zIndex: 100,
@@ -33,23 +34,19 @@ const MainLayout = () => {
         height: '56px',
       }}>
         <Link to="/" style={{ display: 'flex', alignItems: 'center', marginRight: '24px' }}>
-          <div style={{ 
-            fontSize: '18px', 
-            fontWeight: 'bold', 
-            color: '#3b82f6',
-          }}>
+          <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#3b82f6' }}>
             T-Match
           </div>
         </Link>
         <nav style={{ display: 'flex', gap: '8px' }}>
           {navItems.map(item => (
-            <Link 
+            <Link
               key={item.key}
               to={item.path}
               style={{
                 padding: '6px 12px',
                 color: location.pathname === item.key ? '#fff' : '#a1a1aa',
-                background: location.pathname === item.key ? '#27272a' : 'transparent',
+                background: location.pathname === item.key ? '#1a1a1e' : 'transparent',
                 borderRadius: '6px',
                 fontSize: '14px',
                 textDecoration: 'none',
@@ -63,22 +60,18 @@ const MainLayout = () => {
         <div style={{ marginLeft: 'auto' }}>
           {isAuthenticated() ? (
             <Space>
-              <span style={{ color: '#a1a1aa', fontSize: '14px' }}>
+              <span style={{ color: '#e4e4e7', fontSize: '14px' }}>
                 <UserOutlined style={{ marginRight: '4px' }} />
                 {user?.username || user?.email}
               </span>
-              <Button 
-                type="text" 
-                onClick={logout}
-                style={{ color: '#3b82f6' }}
-              >
+              <Button type="text" onClick={logout} style={{ color: '#3b82f6' }}>
                 退出
               </Button>
             </Space>
           ) : (
             <Space>
               <Link to="/login">
-                <Button type="default" ghost style={{ borderColor: '#3f3f46', color: '#a1a1aa' }}>
+                <Button type="default" ghost style={{ borderColor: '#27272a', color: '#e4e4e7' }}>
                   登录
                 </Button>
               </Link>
@@ -91,21 +84,21 @@ const MainLayout = () => {
           )}
         </div>
       </Header>
-      <Content style={{ 
-        padding: '0', 
-        background: '#0e0e10',
+      <Content style={{
+        padding: '0',
+        background: '#0a0a0a',
         minHeight: 'calc(100vh - 56px - 48px)',
       }}>
         <Outlet />
       </Content>
-      <Footer style={{ 
-        textAlign: 'center', 
-        background: '#0e0e10', 
-        color: '#52525b',
+      <Footer style={{
+        textAlign: 'center',
+        background: '#0a0a0a',
+        color: '#a1a1aa',
         padding: '16px 24px',
-        borderTop: '1px solid #27272a',
+        borderTop: '1px solid #1e1e22',
       }}>
-        <Space split={<span style={{ color: '#3f3f46' }}>|</span>}>
+        <Space split={<span style={{ color: '#27272a' }}>|</span>}>
           <span>T-Match ©{new Date().getFullYear()}</span>
           <span>AI驱动的求职助手</span>
         </Space>

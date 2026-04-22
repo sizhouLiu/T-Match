@@ -5,10 +5,9 @@ FastAPI backend for T-Match job search platform.
 ## Setup
 
 ```bash
-# Install uv if not already installed
+
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# Install dependencies
 uv pip install -e .
 ```
 

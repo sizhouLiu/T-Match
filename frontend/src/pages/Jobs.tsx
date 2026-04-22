@@ -205,19 +205,27 @@ const Jobs = () => {
       title: '专业',
       dataIndex: 'major',
       key: 'major',
-      width: 120,
+      width: 150,
       render: (text: string) => {
         if (!text) return '-'
-        const majors = text.split(', ')
-        if (majors.length > 2) {
-          return (
-            <Space>
-              <Tag>{majors[0]}</Tag>
-              <Text type="secondary">+{majors.length - 1}</Text>
-            </Space>
-          )
-        }
-        return majors.map(m => <Tag key={m}>{m}</Tag>)
+        const majors = text.split(/[,、]\s*/).filter(Boolean)
+        const show = majors.slice(0, 3)
+        const rest = majors.length - show.length
+        return (
+          <div
+            title={majors.join('、')}
+            style={{
+              display: 'flex',
+              gap: 4,
+              overflow: 'hidden',
+              whiteSpace: 'nowrap',
+              cursor: rest > 0 ? 'pointer' : 'default',
+            }}
+          >
+            {show.map(m => <Tag key={m} style={{ flexShrink: 0 }}>{m}</Tag>)}
+            {rest > 0 && <Tag style={{ flexShrink: 0, background: '#3f3f46', borderColor: '#52525b', color: '#a1a1aa' }}>+{rest}</Tag>}
+          </div>
+        )
       },
     },
     {

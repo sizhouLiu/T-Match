@@ -3,5 +3,6 @@ from app.routers.jobs import router as jobs_router
 from app.routers.resumes import router as resumes_router
 from app.routers.scraper import router as scraper_router
 from app.routers.match import router as match_router
+from app.routers.campus import router as campus_router
 
-__all__ = ["auth_router", "jobs_router", "resumes_router", "scraper_router", "match_router"]
+__all__ = ["auth_router", "jobs_router", "resumes_router", "scraper_router", "match_router", "campus_router"]

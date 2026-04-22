@@ -1,4 +1,5 @@
 export { authApi } from './auth'
 export { jobsApi } from './jobs'
 export { resumesApi } from './resumes'
+export { campusApi } from './campus'
 export { default as api } from './client'
