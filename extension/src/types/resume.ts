@@ -57,11 +57,12 @@ export interface ResumeData {
 }
 
 /** chrome.runtime message types */
-export type MessageType = 'SAVE_RESUME' | 'GET_RESUME' | 'FILL_FORM' | 'SCAN_FORM' | 'DO_FILL' | 'DO_SCAN'
+export type MessageType = 'SAVE_RESUME' | 'GET_RESUME' | 'FILL_FORM' | 'SCAN_FORM' | 'DO_FILL' | 'DO_SCAN' | 'PARSE_FILE_VL'
 
 export interface ExtMessage {
   type: MessageType
-  data?: ResumeData
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  data?: any
 }
 
 export interface ScannedField {

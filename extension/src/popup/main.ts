@@ -1,4 +1,4 @@
-import { parseResume } from '../utils/resume-parser'
+import { parseResume, normalizeResumeData } from '../utils/resume-parser'
 import type { ResumeData, ExtMessage, ScannedField, FillResult } from '../types/resume'
 import './popup.css'
 
@@ -150,13 +150,30 @@ document.addEventListener('DOMContentLoaded', async () => {
   $<HTMLInputElement>('file-input').addEventListener('change', async (e) => {
     const file = (e.target as HTMLInputElement).files?.[0]
     if (!file) return
+
+    const ext = file.name.split('.').pop()?.toLowerCase() || ''
+    const isVlTypes = ['pdf', 'docx', 'doc'].includes(ext)
+
     try {
-      const data = await parseResume(file)
+      let data: ResumeData
+      if (isVlTypes) {
+        setStatus(false, 'AI 解析中，请稍候...')
+        toast('正在上传并进行 AI 解析...', 'info')
+        const arrayBuffer = await file.arrayBuffer()
+        const base64 = btoa(new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), ''))
+        const resp = await sendMsg({ type: 'PARSE_FILE_VL', data: { fileName: file.name, fileData: base64, fileType: file.type } })
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if ((resp as any).error) throw new Error((resp as any).error)
+        data = normalizeResumeData(resp.data)
+      } else {
+        data = await parseResume(file)
+      }
       syncFormFromResume(data)
       await saveResume(data)
       setStatus(true, `已加载：${file.name}`)
       toast('简历解析成功', 'success')
     } catch (err) {
+      setStatus(false, '解析失败')
       toast((err as Error).message || '解析失败', 'error')
     } finally {
       (e.target as HTMLInputElement).value = ''

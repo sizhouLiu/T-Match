@@ -1,12 +1,16 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from typing import List
+import logging
+import os
+
 from app.database import get_db
 from app.schemas import ResumeCreate, ResumeUpdate, ResumeResponse
 from app.models import Resume
 
 router = APIRouter(prefix="/resumes", tags=["resumes"])
+logger = logging.getLogger(__name__)
 
 @router.get("/", response_model=List[ResumeResponse])
 async def list_resumes(user_id: int, db: AsyncSession = Depends(get_db)):
@@ -47,3 +51,30 @@ async def delete_resume(resume_id: int, db: AsyncSession = Depends(get_db)):
     await db.delete(resume)
     await db.commit()
     return {"message": "Resume deleted"}
+
+ALLOWED_EXTENSIONS = {".pdf", ".docx", ".doc"}
+MAX_FILE_SIZE = 10 * 1024 * 1024
+
+@router.post("/parse-file")
+async def parse_resume_file(file: UploadFile):
+    ext = os.path.splitext(file.filename or "")[1].lower()
+    if ext not in ALLOWED_EXTENSIONS: raise HTTPException(status_code=400, detail=f"不支持的文件格式: {ext}，仅支持 PDF/Word")
+    file_bytes = await file.read()
+    if len(file_bytes) > MAX_FILE_SIZE: raise HTTPException(status_code=400, detail="文件大小超过 10MB 限制")
+    try:
+        from app.external.llm import tongyi_llm
+        if ext == ".pdf":
+            from app.utils.file_converter import pdf_to_images_b64
+            images = await pdf_to_images_b64(file_bytes)
+            if not images: raise HTTPException(status_code=400, detail="PDF 文件无有效页面")
+            return await tongyi_llm.parse_resume_vl(images)
+        else:
+            from app.utils.file_converter import docx_to_text
+            text = await docx_to_text(file_bytes)
+            if not text.strip(): raise HTTPException(status_code=400, detail="Word 文件无有效内容")
+            return await tongyi_llm.parse_resume_text(text)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("resume_parse_failed")
+        raise HTTPException(status_code=500, detail=f"解析失败: {str(e)}")

@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "description": "自动解析简历，智能识别网页表单，一键填写求职信息",
   "permissions": ["activeTab", "storage", "scripting"],
+  "host_permissions": ["http://localhost:8000/*"],
   "action": {
     "default_popup": "src/popup/index.html",
     "default_icon": {
