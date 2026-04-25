@@ -6,6 +6,7 @@ from app.database import get_db
 from app.schemas import JobCreate, JobResponse, JobApplicationCreate, JobApplicationResponse, JobApplicationUpdate
 from app.models import Job, JobApplication
 from app.tasks.ai_tasks import encode_job_vector_task
+from app.routers.auth import get_current_user, User
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
 
@@ -45,18 +46,18 @@ async def get_job(job_id: int, db: AsyncSession = Depends(get_db)):
     return job
 
 @router.post("/apply", response_model=JobApplicationResponse)
-async def apply_job(application_data: JobApplicationCreate, user_id: int, db: AsyncSession = Depends(get_db)):
+async def apply_job(application_data: JobApplicationCreate, current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Job).where(Job.id == application_data.job_id))
     if not result.scalar_one_or_none(): raise HTTPException(status_code=404, detail="Job not found")
-    application = JobApplication(user_id=user_id, **application_data.model_dump())
+    application = JobApplication(user_id=current_user.id, **application_data.model_dump())
     db.add(application)
     await db.commit()
     await db.refresh(application)
     return application
 
-@router.get("/applications/{user_id}", response_model=List[JobApplicationResponse])
-async def get_user_applications(user_id: int, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(JobApplication).where(JobApplication.user_id == user_id))
+@router.get("/applications", response_model=List[JobApplicationResponse])
+async def get_user_applications(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(JobApplication).where(JobApplication.user_id == current_user.id))
     return result.scalars().all()
 
 @router.patch("/applications/{application_id}", response_model=JobApplicationResponse)

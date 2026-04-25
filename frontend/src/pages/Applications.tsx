@@ -19,8 +19,8 @@ const Applications = () => {
   const user = useAuthStore((state) => state.user)
 
   const { data: applications, isLoading } = useQuery({
-    queryKey: ['applications', user?.id],
-    queryFn: () => jobsApi.getApplications(user!.id),
+    queryKey: ['applications'],
+    queryFn: () => jobsApi.getApplications(),
     enabled: !!user?.id,
   })
 

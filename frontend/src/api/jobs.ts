@@ -38,13 +38,13 @@ export const jobsApi = {
     return response.data
   },
 
-  apply: async (userId: number, data: CreateApplicationRequest): Promise<JobApplication> => {
-    const response = await api.post<JobApplication>('/jobs/apply', data, { params: { user_id: userId } })
+  apply: async (data: CreateApplicationRequest): Promise<JobApplication> => {
+    const response = await api.post<JobApplication>('/jobs/apply', data)
     return response.data
   },
 
-  getApplications: async (userId: number): Promise<JobApplication[]> => {
-    const response = await api.get<JobApplication[]>(`/jobs/applications/${userId}`)
+  getApplications: async (): Promise<JobApplication[]> => {
+    const response = await api.get<JobApplication[]>('/jobs/applications')
     return response.data
   },
 

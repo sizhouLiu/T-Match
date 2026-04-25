@@ -10,6 +10,10 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str
+    confirmPassword: Optional[str] = None
+
+    class Config:
+        extra = "ignore"
 
 
 class UserLogin(BaseModel):

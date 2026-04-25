@@ -34,3 +34,68 @@
   from { transform: translateX(100%); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
 }
+
+/* ─── Floating Bubble ─────────────────────────────────────────────── */
+
+#tmatch-bubble {
+  position: fixed !important;
+  bottom: 30px !important;
+  right: 30px !important;
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 50% !important;
+  background: #3b82f6 !important;
+  border: 2px solid #2563eb !important;
+  cursor: pointer !important;
+  z-index: 2147483647 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+#tmatch-bubble:hover {
+  transform: scale(1.1) !important;
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5) !important;
+}
+
+#tmatch-bubble img {
+  width: 28px !important;
+  height: 28px !important;
+  pointer-events: none !important;
+}
+
+#tmatch-bubble.dragging {
+  transition: none !important;
+  opacity: 0.8 !important;
+}
+
+/* ─── Iframe Panel ────────────────────────────────────────────────── */
+
+#tmatch-panel {
+  position: fixed !important;
+  bottom: 90px !important;
+  right: 30px !important;
+  width: 400px !important;
+  height: 520px !important;
+  border: 1px solid #27272a !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  z-index: 2147483646 !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5) !important;
+  display: none !important;
+  background: #0a0a0a !important;
+}
+
+#tmatch-panel.open {
+  display: block !important;
+}
+
+#tmatch-panel iframe {
+  width: 100% !important;
+  height: 100% !important;
+  border: none !important;
+}

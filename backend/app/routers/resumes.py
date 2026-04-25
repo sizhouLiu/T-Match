@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, Query
+from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from typing import List
@@ -8,18 +8,19 @@ import os
 from app.database import get_db
 from app.schemas import ResumeCreate, ResumeUpdate, ResumeResponse
 from app.models import Resume
+from app.routers.auth import get_current_user, User
 
 router = APIRouter(prefix="/resumes", tags=["resumes"])
 logger = logging.getLogger(__name__)
 
 @router.get("/", response_model=List[ResumeResponse])
-async def list_resumes(user_id: int, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Resume).where(Resume.user_id == user_id))
+async def list_resumes(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Resume).where(Resume.user_id == current_user.id))
     return result.scalars().all()
 
 @router.post("/", response_model=ResumeResponse)
-async def create_resume(resume_data: ResumeCreate, user_id: int, db: AsyncSession = Depends(get_db)):
-    resume = Resume(user_id=user_id, **resume_data.model_dump())
+async def create_resume(resume_data: ResumeCreate, current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    resume = Resume(user_id=current_user.id, **resume_data.model_dump())
     db.add(resume)
     await db.commit()
     await db.refresh(resume)
@@ -51,6 +52,20 @@ async def delete_resume(resume_id: int, db: AsyncSession = Depends(get_db)):
     await db.delete(resume)
     await db.commit()
     return {"message": "Resume deleted"}
+
+@router.post("/{resume_id}/optimize")
+async def optimize_resume(resume_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Resume).where(Resume.id == resume_id))
+    if not (resume := result.scalar_one_or_none()): raise HTTPException(status_code=404, detail="Resume not found")
+    try:
+        from app.services.ai_service import optimize_resume_with_ai
+        import json
+        resume_text = json.dumps(resume.content, ensure_ascii=False, indent=2)
+        optimized = await optimize_resume_with_ai(resume_text)
+        return {"optimized_text": optimized}
+    except Exception as e:
+        logger.exception("optimize_failed")
+        raise HTTPException(status_code=500, detail=f"优化失败: {str(e)}")
 
 ALLOWED_EXTENSIONS = {".pdf", ".docx", ".doc"}
 MAX_FILE_SIZE = 10 * 1024 * 1024

@@ -325,3 +325,87 @@ chrome.runtime.onMessage.addListener(
     }
   },
 )
+
+// ─── Floating Bubble ─────────────────────────────────────────────────────────
+
+function createBubble(): void {
+  if (document.getElementById('tmatch-bubble')) return
+
+  const bubble = document.createElement('div')
+  bubble.id = 'tmatch-bubble'
+  bubble.title = 'T-Match 简历助手'
+
+  const icon = document.createElement('img')
+  icon.src = chrome.runtime.getURL('icons/icon48.png')
+  icon.alt = 'T-Match'
+  bubble.appendChild(icon)
+
+  const panel = document.createElement('div')
+  panel.id = 'tmatch-panel'
+
+  const iframe = document.createElement('iframe')
+  iframe.src = chrome.runtime.getURL('src/popup/index.html')
+  panel.appendChild(iframe)
+
+  let isDragging = false
+
+  bubble.addEventListener('click', () => {
+    if (isDragging) return
+    panel.classList.toggle('open')
+  })
+
+  let startX = 0, startY = 0, startLeft = 0, startTop = 0
+
+  bubble.addEventListener('mousedown', (e: MouseEvent) => {
+    if (e.button !== 0) return
+    isDragging = false
+    startX = e.clientX
+    startY = e.clientY
+    const rect = bubble.getBoundingClientRect()
+    startLeft = rect.left
+    startTop = rect.top
+
+    const onMouseMove = (ev: MouseEvent) => {
+      const dx = ev.clientX - startX
+      const dy = ev.clientY - startY
+      if (!isDragging && Math.abs(dx) + Math.abs(dy) > 5) {
+        isDragging = true
+        bubble.classList.add('dragging')
+        bubble.style.right = 'auto'
+        bubble.style.bottom = 'auto'
+      }
+      if (isDragging) {
+        const newLeft = Math.max(0, Math.min(window.innerWidth - 48, startLeft + dx))
+        const newTop = Math.max(0, Math.min(window.innerHeight - 48, startTop + dy))
+        bubble.style.left = newLeft + 'px'
+        bubble.style.top = newTop + 'px'
+        panel.style.right = 'auto'
+        panel.style.bottom = 'auto'
+        panel.style.left = Math.min(newLeft, window.innerWidth - 410) + 'px'
+        panel.style.top = Math.max(0, newTop - 530) + 'px'
+      }
+    }
+
+    const onMouseUp = () => {
+      document.removeEventListener('mousemove', onMouseMove)
+      document.removeEventListener('mouseup', onMouseUp)
+      bubble.classList.remove('dragging')
+      if (isDragging) setTimeout(() => { isDragging = false }, 0)
+    }
+
+    document.addEventListener('mousemove', onMouseMove)
+    document.addEventListener('mouseup', onMouseUp)
+  })
+
+  document.addEventListener('click', (e: MouseEvent) => {
+    const target = e.target as Node
+    if (panel.classList.contains('open') && !panel.contains(target) && !bubble.contains(target)) {
+      panel.classList.remove('open')
+    }
+  })
+
+  document.body.appendChild(bubble)
+  document.body.appendChild(panel)
+}
+
+createBubble()

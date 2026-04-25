@@ -27,14 +27,14 @@ const Resumes = () => {
   const [aiLoading, setAiLoading] = useState(false)
 
   const { data: resumes, isLoading } = useQuery({
-    queryKey: ['resumes', user?.id],
-    queryFn: () => resumesApi.list(user!.id),
+    queryKey: ['resumes'],
+    queryFn: () => resumesApi.list(),
     enabled: !!user?.id,
   })
 
   const createMutation = useMutation({
     mutationFn: (data: { title: string; content: ResumeContent }) =>
-      resumesApi.create(user!.id, {
+      resumesApi.create({
         title: data.title,
         content: data.content as unknown as Record<string, unknown>,
       }),

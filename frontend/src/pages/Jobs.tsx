@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Table, Button, Tag, Checkbox, Space, Dropdown, Modal, Typography, message } from 'antd'
-import { DownOutlined, ReloadOutlined, SettingOutlined } from '@ant-design/icons'
+import { DownOutlined, ReloadOutlined, SettingOutlined, SendOutlined, LinkOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
 import type { MenuProps } from 'antd'
 import { jobsApi } from '../api'
+import { useAuthStore } from '../stores/authStore'
 import type { Job } from '../types'
 
 const { Text } = Typography
@@ -98,9 +99,21 @@ const Jobs = () => {
     job: null,
   })
 
+  const user = useAuthStore((state) => state.user)
+  const queryClient = useQueryClient()
+
   const { data: jobs, isLoading, refetch } = useQuery({
     queryKey: ['jobs', filters],
     queryFn: () => jobsApi.list(),
+  })
+
+  const applyMutation = useMutation({
+    mutationFn: (jobId: number) => jobsApi.apply({ job_id: jobId }),
+    onSuccess: () => {
+      message.success('投递成功')
+      queryClient.invalidateQueries({ queryKey: ['applications'] })
+    },
+    onError: () => message.error('投递失败'),
   })
 
   // 筛选后的数据
@@ -480,7 +493,33 @@ const Jobs = () => {
         title={detailModal.job?.title}
         open={detailModal.visible}
         onCancel={() => setDetailModal({ visible: false, job: null })}
-        footer={null}
+        footer={
+          <Space>
+            {detailModal.job?.detail_url && (
+              <Button 
+                icon={<LinkOutlined />} 
+                href={detailModal.job.detail_url} 
+                target="_blank"
+              >
+                跳转投递链接
+              </Button>
+            )}
+            {user && (
+              <Button 
+                type="primary" 
+                icon={<SendOutlined />} 
+                loading={applyMutation.isPending}
+                onClick={() => {
+                  if (detailModal.job) {
+                    applyMutation.mutate(detailModal.job.id)
+                  }
+                }}
+              >
+                记录投递
+              </Button>
+            )}
+          </Space>
+        }
         width={600}
       >
         {detailModal.job && (

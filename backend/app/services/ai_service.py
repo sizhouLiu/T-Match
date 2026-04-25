@@ -1,7 +1,6 @@
 import os
-from openai import AsyncOpenAI
-
-client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY", ""))
+import httpx
+from app.external.config import external_settings
 
 OPTIMIZE_PROMPT = """你是一位专业的简历优化顾问。请根据以下简历内容，给出具体的优化建议和改进后的版本。
 
@@ -20,13 +19,31 @@ OPTIMIZE_PROMPT = """你是一位专业的简历优化顾问。请根据以下�
 
 
 async def optimize_resume_with_ai(resume_text: str) -> str:
-    response = await client.chat.completions.create(
-        model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
-        messages=[
+    if not external_settings.TONGYI_API_KEY:
+        raise ValueError("TONGYI_API_KEY is not set")
+    
+    headers = {
+        "Authorization": f"Bearer {external_settings.TONGYI_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "model": external_settings.TONGYI_CHAT_MODEL,
+        "messages": [
             {"role": "system", "content": "你是一位资深的简历优化专家，擅长帮助求职者优化简历内容。"},
             {"role": "user", "content": OPTIMIZE_PROMPT.format(resume_text=resume_text)},
         ],
-        temperature=0.7,
-        max_tokens=2000,
-    )
-    return response.choices[0].message.content or "优化结果为空，请重试"
+        "temperature": 0.7,
+        "max_tokens": 2000,
+    }
+    
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            f"{external_settings.TONGYI_BASE_URL}/chat/completions",
+            headers=headers,
+            json=payload,
+            timeout=60.0
+        )
+        response.raise_for_status()
+        data = response.json()
+        return data["choices"][0]["message"]["content"] or "优化结果为空，请重试"

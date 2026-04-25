@@ -1,6 +1,52 @@
 import api from './client'
 import type { Resume } from '../types'
 
+export interface ResumeContent {
+  basic_info: {
+    name: string
+    phone: string
+    email: string
+    location: string
+    birth_date: string
+    gender: string
+    job_intention: string
+    self_summary: string
+  }
+  education: Array<{
+    school: string
+    degree: string
+    major: string
+    start_date: string
+    end_date: string
+    gpa: string
+    description: string
+  }>
+  work_experience: Array<{
+    company: string
+    position: string
+    start_date: string
+    end_date: string
+    description: string
+  }>
+  project_experience: Array<{
+    name: string
+    role: string
+    start_date: string
+    end_date: string
+    description: string
+    tech_stack: string
+  }>
+  skills: Array<{
+    name: string
+    level: number
+  }>
+  awards: Array<{
+    name: string
+    date: string
+    description: string
+  }>
+}
+
 export interface CreateResumeRequest {
   title: string
   content: Record<string, unknown>
@@ -15,8 +61,8 @@ export interface UpdateResumeRequest {
 }
 
 export const resumesApi = {
-  list: async (userId: number): Promise<Resume[]> => {
-    const response = await api.get<Resume[]>('/resumes/', { params: { user_id: userId } })
+  list: async (): Promise<Resume[]> => {
+    const response = await api.get<Resume[]>('/resumes/')
     return response.data
   },
 
@@ -25,8 +71,8 @@ export const resumesApi = {
     return response.data
   },
 
-  create: async (userId: number, data: CreateResumeRequest): Promise<Resume> => {
-    const response = await api.post<Resume>('/resumes/', data, { params: { user_id: userId } })
+  create: async (data: CreateResumeRequest): Promise<Resume> => {
+    const response = await api.post<Resume>('/resumes/', data)
     return response.data
   },
 
@@ -41,6 +87,15 @@ export const resumesApi = {
 
   aiOptimize: async (id: number): Promise<{ optimized_text: string }> => {
     const response = await api.post<{ optimized_text: string }>(`/resumes/${id}/optimize`)
+    return response.data
+  },
+
+  parseFile: async (file: File): Promise<ResumeContent> => {
+    const formData = new FormData()
+    formData.append('file', file)
+    const response = await api.post<ResumeContent>('/resumes/parse-file', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
     return response.data
   },
 }

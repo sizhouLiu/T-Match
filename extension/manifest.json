@@ -28,5 +28,16 @@
       "css": ["src/content/content.css"],
       "run_at": "document_idle"
     }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "src/popup/index.html",
+        "src/popup/index.js",
+        "index.css",
+        "icons/icon48.png"
+      ],
+      "matches": ["<all_urls>"]
+    }
   ]
 }

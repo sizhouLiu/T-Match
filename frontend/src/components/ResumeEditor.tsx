@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react'
 import {
   Form, Input, Button, Card, Space, Typography, Divider,
-  DatePicker, Rate, message, Tabs,
+  DatePicker, Rate, message, Tabs, Upload, Spin,
 } from 'antd'
 import {
   PlusOutlined, DeleteOutlined, UserOutlined,
   BookOutlined, BankOutlined, ProjectOutlined,
-  ToolOutlined, TrophyOutlined, SaveOutlined,
+  ToolOutlined, TrophyOutlined, SaveOutlined, UploadOutlined,
 } from '@ant-design/icons'
 import dayjs from 'dayjs'
+import { resumesApi } from '../api/resumes'
+import type { ResumeContent as ParsedResumeContent } from '../api/resumes'
 
 const { Title, Text } = Typography
 const { TextArea } = Input
@@ -93,11 +95,39 @@ interface ResumeEditorProps {
 const ResumeEditor = ({ initialTitle, initialContent, onSave, saving }: ResumeEditorProps) => {
   const [title, setTitle] = useState(initialTitle || '')
   const [content, setContent] = useState<ResumeContent>(initialContent || emptyContent)
+  const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
     if (initialTitle) setTitle(initialTitle)
     if (initialContent) setContent(initialContent)
   }, [initialTitle, initialContent])
+
+  const handleFileUpload = async (file: File) => {
+    const allowedTypes = ['.pdf', '.docx', '.doc']
+    const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase()
+    if (!allowedTypes.includes(ext)) {
+      message.error('仅支持 PDF/Word 文件')
+      return false
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      message.error('文件大小不能超过 10MB')
+      return false
+    }
+    setUploading(true)
+    try {
+      const parsed = await resumesApi.parseFile(file)
+      setContent(parsed)
+      if (parsed.basic_info?.name) {
+        setTitle(`${parsed.basic_info.name}的简历`)
+      }
+      message.success('简历解析成功')
+    } catch {
+      message.error('简历解析失败，请手动填写')
+    } finally {
+      setUploading(false)
+    }
+    return false
+  }
 
   const updateBasicInfo = (field: keyof ResumeBasicInfo, value: string) => {
     setContent(prev => ({
@@ -446,11 +476,28 @@ const ResumeEditor = ({ initialTitle, initialContent, onSave, saving }: ResumeEd
         <Title level={4} style={{ color: '#fff', margin: 0 }}>
           {initialTitle ? '编辑简历' : '新建简历'}
         </Title>
-        <Button type="primary" icon={<SaveOutlined />} onClick={handleSave} loading={saving}>
-          保存简历
-        </Button>
+        <Space>
+          <Upload
+            accept=".pdf,.docx,.doc"
+            beforeUpload={handleFileUpload}
+            showUploadList={false}
+          >
+            <Button icon={<UploadOutlined />} loading={uploading}>
+              {uploading ? '解析中...' : '上传简历'}
+            </Button>
+          </Upload>
+          <Button type="primary" icon={<SaveOutlined />} onClick={handleSave} loading={saving}>
+            保存简历
+          </Button>
+        </Space>
       </div>
-      <Tabs items={tabItems} type="card" />
+      {uploading && (
+        <div style={{ textAlign: 'center', padding: 40, marginBottom: 16 }}>
+          <Spin size="large" />
+          <div style={{ marginTop: 16, color: '#a1a1aa' }}>AI 正在解析简历...</div>
+        </div>
+      )}
+      {!uploading && <Tabs items={tabItems} type="card" />}
     </div>
   )
 }
