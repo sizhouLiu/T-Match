@@ -2,7 +2,6 @@ from fastapi import APIRouter, BackgroundTasks
 from typing import Dict, Any
 
 from app.utils.scraper_api import scrape_jobs as scrape_jobs_api
-from app.utils.scraper import scrape_jobs as scrape_jobs_browser
 
 router = APIRouter(prefix="/scraper", tags=["scraper"])
 
@@ -37,13 +36,6 @@ async def run_scraper_api(
         direction=direction,
         max_pages=max_pages,
     )
-    return result
-
-
-@router.get("/run-browser", response_model=Dict[str, Any])
-async def run_scraper_browser():
-    """运行爬虫（同步 - 使用浏览器）"""
-    result = scrape_jobs_browser()
     return result
 
 

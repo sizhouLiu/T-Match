@@ -1,18 +1,20 @@
 import client from './client';
 import { MatchResponse } from '../types';
 
-export const matchResumeToJobsText = async (resumeText: string, topK: number = 20): Promise<MatchResponse> => {
+export const matchResumeToJobsText = async (resumeText: string, topK: number = 20, useRerank: boolean = false): Promise<MatchResponse> => {
   const response = await client.post('/match/resume-to-jobs', {
     resume_text: resumeText,
-    top_k: topK
+    top_k: topK,
+    use_rerank: useRerank
   });
   return response.data;
 };
 
-export const matchResumeToJobsId = async (resumeId: number, topK: number = 20): Promise<MatchResponse> => {
+export const matchResumeToJobsId = async (resumeId: number, topK: number = 20, useRerank: boolean = false): Promise<MatchResponse> => {
   const response = await client.post('/match/resume-to-jobs', {
     resume_id: resumeId,
-    top_k: topK
+    top_k: topK,
+    use_rerank: useRerank
   });
   return response.data;
 };

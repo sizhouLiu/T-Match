@@ -24,7 +24,7 @@ async def list_campus(skip: int = 0, limit: int = 200, db: AsyncSession = Depend
 async def run_campus_scraper(
     demo_id: str = "banking",
     direction: str = "金融学专业",
-    max_pages: int = 3,
+    max_pages: int = 1,
 ):
     """手动触发校招爬虫"""
     result = scrape_campus(demo_id=demo_id, direction=direction, max_pages=max_pages)
