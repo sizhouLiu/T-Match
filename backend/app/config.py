@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     CORS_ORIGINS: str | List[str] = ["http://localhost:3000", "http://localhost:5173"]
     MILVUS_URI: str = "http://localhost:19530"
     MILVUS_COLLECTION_NAME: str = "job_vectors"
+    MILVUS_RESUME_COLLECTION: str = "resume_vectors"
     MILVUS_DENSE_DIM: int = 1024
     VECTOR_SEARCH_TOP_K: int = 20
     VECTOR_SEARCH_DENSE_WEIGHT: float = 0.6

@@ -6,26 +6,21 @@ PID_FILE="$SCRIPT_DIR/.dev-pids"
 
 echo "Stopping development services..."
 
-# 停止后端和前端进程
 if [ -f "$PID_FILE" ]; then
-    while read pid; do
-        if ps -p "$pid" > /dev/null 2>&1; then
+    while read -r pid; do
+        if kill -0 "$pid" 2>/dev/null; then
             kill "$pid" 2>/dev/null
-            echo "Stopped process $pid"
+            echo "   Stopped PID $pid"
         fi
     done < "$PID_FILE"
     rm -f "$PID_FILE"
 fi
 
-# 也尝试通过端口杀死进程
-if lsof -ti:8000 > /dev/null 2>&1; then
-    kill $(lsof -ti:8000) 2>/dev/null
-    echo "Stopped backend (port 8000)"
-fi
-
-if lsof -ti:5173 > /dev/null 2>&1; then
-    kill $(lsof -ti:5173) 2>/dev/null
-    echo "Stopped frontend (port 5173)"
-fi
+for port in 8000 5173; do
+    if pids=$(lsof -ti:$port 2>/dev/null); then
+        echo "$pids" | xargs kill 2>/dev/null
+        echo "   Released port $port"
+    fi
+done
 
 echo "All services stopped."

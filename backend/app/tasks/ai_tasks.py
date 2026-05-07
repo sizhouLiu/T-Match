@@ -8,16 +8,17 @@ from app.models.job import Job
 from app.models.resume import Resume
 from app.external.llm import tongyi_llm
 
+
 @celery_app.task
 def encode_job_vector_task(job_id: int):
     with sync_session_maker() as session:
         if not (job := session.get(Job, job_id)): return {"job_id": job_id, "status": "failed", "error": "Job not found"}
-        if not (text := vector_service.build_search_text(job)): return {"job_id": job_id, "status": "skipped", "reason": "No text content"}
         try:
-            vector_service.insert_job_vector_sync(job.id, job.position_id, text)
+            vector_service.insert_job_vector_sync(job)
             return {"job_id": job_id, "status": "indexed"}
         except Exception as e:
             return {"job_id": job_id, "status": "failed", "error": str(e)}
+
 
 @celery_app.task
 def batch_encode_jobs_task():
@@ -25,37 +26,42 @@ def batch_encode_jobs_task():
         jobs = session.query(Job).all()
         indexed, failed = 0, 0
         for job in jobs:
-            if not (text := vector_service.build_search_text(job)): continue
             try:
-                vector_service.insert_job_vector_sync(job.id, job.position_id, text)
+                vector_service.insert_job_vector_sync(job)
                 indexed += 1
             except Exception:
                 failed += 1
         return {"status": "completed", "indexed": indexed, "failed": failed, "total": len(jobs)}
 
-@celery_app.task
-def optimize_resume_task(resume_id: int, job_description: str):
-    return {"resume_id": resume_id, "status": "optimized", "suggestions": ["Add more quantifiable achievements", "Include relevant keywords from job description", "Highlight transferable skills"]}
 
 @celery_app.task
-def auto_fill_application_task(job_url: str, user_data: dict):
-    return {"job_url": job_url, "status": "filled", "fields_populated": len(user_data)}
+def encode_resume_vector_task(resume_id: int):
+    with sync_session_maker() as session:
+        if not (resume := session.get(Resume, resume_id)): return {"resume_id": resume_id, "status": "failed", "error": "Resume not found"}
+        if not resume.content: return {"resume_id": resume_id, "status": "skipped", "reason": "No content"}
+        try:
+            vector_service.insert_resume_vector_sync(resume.id, resume.content)
+            return {"resume_id": resume_id, "status": "indexed"}
+        except Exception as e:
+            return {"resume_id": resume_id, "status": "failed", "error": str(e)}
+
 
 @celery_app.task
 def scrape_jobs_task():
     from app.utils.scraper import scrape_jobs
     return scrape_jobs()
 
+
 @celery_app.task
 def scrape_campus_task():
     from app.utils.scraper_campus import scrape_campus
     return scrape_campus()
 
+
 @celery_app.task
 def daily_sync_all_task():
-    jobs_result = scrape_jobs_task()
-    campus_result = scrape_campus_task()
-    return {"jobs": jobs_result, "campus": campus_result}
+    return {"jobs": scrape_jobs_task(), "campus": scrape_campus_task()}
+
 
 @celery_app.task
 def scrape_jobs_for_resume_task(resume_id: int):

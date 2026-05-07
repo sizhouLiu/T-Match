@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import logging
 from app.config import settings
 from app.routers import auth_router, jobs_router, resumes_router, scraper_router, match_router, campus_router
-from app.services.milvus_client import ensure_collection
+from app.services.milvus_client import ensure_collection, ensure_resume_collection
 
 logger = logging.getLogger(__name__)
 
@@ -21,8 +21,9 @@ def create_app() -> FastAPI:
     async def startup():
         try:
             ensure_collection()
+            ensure_resume_collection()
         except Exception as e:
-            logger.error(f"Failed to initialize Milvus collection: {e}")
+            logger.error(f"Failed to initialize Milvus collections: {e}")
 
     @app.get("/")
     async def root():

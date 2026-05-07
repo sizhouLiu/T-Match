@@ -20,7 +20,12 @@ async def match_resume_to_jobs(request: MatchRequest, db: AsyncSession = Depends
     elif request.resume_id:
         result = await db.execute(select(Resume).filter(Resume.id == request.resume_id, Resume.user_id == current_user.id))
         if not (resume := result.scalars().first()): raise HTTPException(status_code=404, detail="Resume not found")
-        query_text = resume.original_text or str(resume.content)
+        if resume.content:
+            from app.utils.chunking import chunk_resume
+            chunks = chunk_resume(resume.content)
+            query_text = " ".join(chunks[:4])  # 取前4个最重要的 chunk 拼成 query
+        else:
+            query_text = resume.original_text or str(resume.content)
     else:
         raise HTTPException(status_code=400, detail="Must provide either resume_text or resume_id")
     if not query_text: raise HTTPException(status_code=400, detail="Query text is empty")

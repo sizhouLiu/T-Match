@@ -1,6 +1,7 @@
 from pymilvus import MilvusClient, DataType, Function, FunctionType
 from app.config import settings
 
+
 class MilvusConnection:
     _instance = None
     _client = None
@@ -15,16 +16,15 @@ class MilvusConnection:
             self._client = MilvusClient(uri=settings.MILVUS_URI)
         return self._client
 
+
 milvus_conn = MilvusConnection()
 
-def ensure_collection():
-    client = milvus_conn.get_client()
-    collection_name = settings.MILVUS_COLLECTION_NAME
-    if client.has_collection(collection_name=collection_name): return
+
+def _make_schema_and_index(client: MilvusClient, id_field: str):
     schema = MilvusClient.create_schema(auto_id=True, enable_dynamic_field=False)
     schema.add_field(field_name="id", datatype=DataType.INT64, is_primary=True)
-    schema.add_field(field_name="job_db_id", datatype=DataType.INT64)
-    schema.add_field(field_name="position_id", datatype=DataType.VARCHAR, max_length=100)
+    schema.add_field(field_name=id_field, datatype=DataType.INT64)
+    schema.add_field(field_name="chunk_index", datatype=DataType.INT16)
     schema.add_field(field_name="text", datatype=DataType.VARCHAR, max_length=65535, enable_analyzer=True, analyzer_params={"type": "chinese"})
     schema.add_field(field_name="dense_vector", datatype=DataType.FLOAT_VECTOR, dim=settings.MILVUS_DENSE_DIM)
     schema.add_field(field_name="sparse_vector", datatype=DataType.SPARSE_FLOAT_VECTOR)
@@ -32,5 +32,23 @@ def ensure_collection():
     index_params = client.prepare_index_params()
     index_params.add_index(field_name="dense_vector", index_type="HNSW", metric_type="COSINE", params={"M": 16, "efConstruction": 200})
     index_params.add_index(field_name="sparse_vector", index_type="SPARSE_INVERTED_INDEX", metric_type="BM25")
-    client.create_collection(collection_name=collection_name, schema=schema, index_params=index_params)
-    client.load_collection(collection_name)
+    return schema, index_params
+
+
+def ensure_collection():
+    client = milvus_conn.get_client()
+    name = settings.MILVUS_COLLECTION_NAME
+    if client.has_collection(collection_name=name): return
+    schema, index_params = _make_schema_and_index(client, "job_db_id")
+    schema.add_field(field_name="position_id", datatype=DataType.VARCHAR, max_length=100)
+    client.create_collection(collection_name=name, schema=schema, index_params=index_params)
+    client.load_collection(name)
+
+
+def ensure_resume_collection():
+    client = milvus_conn.get_client()
+    name = settings.MILVUS_RESUME_COLLECTION
+    if client.has_collection(collection_name=name): return
+    schema, index_params = _make_schema_and_index(client, "resume_db_id")
+    client.create_collection(collection_name=name, schema=schema, index_params=index_params)
+    client.load_collection(name)

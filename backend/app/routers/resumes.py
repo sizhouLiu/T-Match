@@ -24,9 +24,11 @@ async def create_resume(resume_data: ResumeCreate, current_user: User = Depends(
     db.add(resume)
     await db.commit()
     await db.refresh(resume)
+    from app.tasks.ai_tasks import scrape_jobs_for_resume_task, encode_resume_vector_task
     if resume.original_text:
-        from app.tasks.ai_tasks import scrape_jobs_for_resume_task
         scrape_jobs_for_resume_task.delay(resume.id)
+    if resume.content:
+        encode_resume_vector_task.delay(resume.id)
     return resume
 
 @router.get("/{resume_id}", response_model=ResumeResponse)
@@ -43,6 +45,9 @@ async def update_resume(resume_id: int, update_data: ResumeUpdate, db: AsyncSess
         setattr(resume, key, value)
     await db.commit()
     await db.refresh(resume)
+    from app.tasks.ai_tasks import encode_resume_vector_task
+    if resume.content:
+        encode_resume_vector_task.delay(resume.id)
     return resume
 
 @router.delete("/{resume_id}")
