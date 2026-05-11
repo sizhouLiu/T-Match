@@ -6,12 +6,12 @@ class Settings(BaseSettings):
     APP_NAME: str = "T-Match"
     APP_VERSION: str = "0.1.0"
     DEBUG: bool = True
-    DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/tmatch"
-    DATABASE_URL_SYNC: str = "postgresql://postgres:postgres@localhost:5432/tmatch"
-    REDIS_URL: str = "redis://localhost:6379/0"
-    CELERY_BROKER_URL: str = "redis://localhost:6379/0"
-    CELERY_RESULT_BACKEND: str = "redis://localhost:6379/0"
-    SECRET_KEY: str = "your-secret-key-change-in-production"
+    DATABASE_URL: str
+    DATABASE_URL_SYNC: str
+    REDIS_URL: str
+    CELERY_BROKER_URL: str
+    CELERY_RESULT_BACKEND: str
+    SECRET_KEY: str
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     CORS_ORIGINS: str | List[str] = ["http://localhost:3000", "http://localhost:5173"]

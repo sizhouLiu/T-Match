@@ -271,16 +271,14 @@ const Resumes = () => {
   if (viewMode === 'edit' && currentResume) {
     if (editMode === 'markdown' && currentResume.original_text) {
       return (
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px' }}>
-          <MarkdownResumeEditor
-            resumeId={currentResume.id}
-            initialMarkdown={currentResume.original_text}
-            initialTitle={currentResume.title}
-            onSave={handleUpdateMarkdown}
-            onSwitchToForm={() => setEditMode('form')}
-            saving={updateMutation.isPending}
-          />
-        </div>
+        <MarkdownResumeEditor
+          resumeId={currentResume.id}
+          initialMarkdown={currentResume.original_text}
+          initialTitle={currentResume.title}
+          onSave={handleUpdateMarkdown}
+          onSwitchToForm={() => setEditMode('form')}
+          saving={updateMutation.isPending}
+        />
       )
     }
     return (

@@ -16,8 +16,9 @@ from app.models import *  # noqa: F401, F403 - Import all models
 # access to the values within the .ini file in use.
 config = context.config
 
-# Set database URL from environment variable or default to localhost
-db_url = os.environ.get("DATABASE_URL_SYNC", "postgresql://postgres:postgres@localhost:5432/tmatch")
+db_url = os.environ.get("DATABASE_URL_SYNC")
+if not db_url:
+    raise RuntimeError("DATABASE_URL_SYNC environment variable is not set")
 config.set_main_option("sqlalchemy.url", db_url)
 
 # Interpret the config file for Python logging.
