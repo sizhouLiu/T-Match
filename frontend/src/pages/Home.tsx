@@ -1,6 +1,7 @@
 import { Typography, Row, Col, Card } from 'antd'
 import { RocketOutlined, ThunderboltOutlined, FileSearchOutlined, TeamOutlined } from '@ant-design/icons'
 import { Link } from 'react-router-dom'
+import AskAI from '../components/AskAI'
 
 const { Title, Paragraph } = Typography
 
@@ -86,6 +87,10 @@ const Home = () => {
           </Col>
         ))}
       </Row>
+
+      <div style={{ textAlign: 'center', marginTop: '60px' }}>
+        <AskAI />
+      </div>
     </div>
   )
 }

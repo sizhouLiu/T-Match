@@ -16,8 +16,14 @@ class ResumeCreate(ResumeBase):
 class ResumeUpdate(BaseModel):
     title: Optional[str] = None
     content: Optional[Dict[str, Any]] = None
+    original_text: Optional[str] = None
     optimized_text: Optional[str] = None
     is_primary: Optional[int] = None
+
+
+class MarkdownEditRequest(BaseModel):
+    instruction: str
+    markdown: str
 
 
 class ResumeResponse(ResumeBase):

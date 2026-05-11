@@ -56,6 +56,7 @@ export interface CreateResumeRequest {
 export interface UpdateResumeRequest {
   title?: string
   content?: Record<string, unknown>
+  original_text?: string | null
   optimized_text?: string
   is_primary?: number
 }
@@ -95,6 +96,24 @@ export const resumesApi = {
     formData.append('file', file)
     const response = await api.post<ResumeContent>('/resumes/parse-file', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
+    })
+    return response.data
+  },
+
+  convertToMarkdown: async (id: number): Promise<{ markdown: string }> => {
+    const response = await api.post<{ markdown: string }>(`/resumes/${id}/convert-to-markdown`)
+    return response.data
+  },
+
+  convertFromMarkdown: async (id: number): Promise<Resume> => {
+    const response = await api.post<Resume>(`/resumes/${id}/convert-from-markdown`)
+    return response.data
+  },
+
+  aiEditMarkdown: async (id: number, instruction: string, markdown: string): Promise<{ markdown: string; content: ResumeContent }> => {
+    const response = await api.post<{ markdown: string; content: ResumeContent }>(`/resumes/${id}/ai-edit-markdown`, {
+      instruction,
+      markdown,
     })
     return response.data
   },

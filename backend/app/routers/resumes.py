@@ -6,7 +6,7 @@ import logging
 import os
 
 from app.database import get_db
-from app.schemas import ResumeCreate, ResumeUpdate, ResumeResponse
+from app.schemas import ResumeCreate, ResumeUpdate, ResumeResponse, MarkdownEditRequest
 from app.models import Resume
 from app.routers.auth import get_current_user, User
 
@@ -74,6 +74,52 @@ async def optimize_resume(resume_id: int, db: AsyncSession = Depends(get_db)):
 
 ALLOWED_EXTENSIONS = {".pdf", ".docx", ".doc"}
 MAX_FILE_SIZE = 10 * 1024 * 1024
+
+@router.post("/{resume_id}/convert-to-markdown")
+async def convert_to_markdown(resume_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Resume).where(Resume.id == resume_id))
+    if not (resume := result.scalar_one_or_none()): raise HTTPException(status_code=404, detail="Resume not found")
+    from app.services.markdown_service import resume_to_markdown
+    markdown = resume_to_markdown(resume.content)
+    resume.original_text = markdown
+    await db.commit()
+    return {"markdown": markdown}
+
+@router.post("/{resume_id}/convert-from-markdown", response_model=ResumeResponse)
+async def convert_from_markdown(resume_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Resume).where(Resume.id == resume_id))
+    if not (resume := result.scalar_one_or_none()): raise HTTPException(status_code=404, detail="Resume not found")
+    if not resume.original_text: raise HTTPException(status_code=400, detail="No markdown text found in original_text")
+    from app.services.markdown_service import markdown_to_resume
+    resume.content = markdown_to_resume(resume.original_text)
+    await db.commit()
+    await db.refresh(resume)
+    from app.tasks.ai_tasks import encode_resume_vector_task
+    encode_resume_vector_task.delay(resume.id)
+    return resume
+
+@router.post("/{resume_id}/ai-edit-markdown")
+async def ai_edit_markdown(resume_id: int, request: MarkdownEditRequest, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Resume).where(Resume.id == resume_id))
+    if not (resume := result.scalar_one_or_none()): raise HTTPException(status_code=404, detail="Resume not found")
+    if not request.markdown.strip(): raise HTTPException(status_code=400, detail="Markdown内容不能为空")
+    if not request.instruction.strip(): raise HTTPException(status_code=400, detail="编辑指令不能为空")
+    from app.services.ai_markdown_service import edit_resume_markdown
+    from app.services.markdown_service import markdown_to_resume
+    edited_md = await edit_resume_markdown(request.markdown, request.instruction)
+    if not edited_md: raise HTTPException(status_code=500, detail="AI 编辑返回空内容")
+    try:
+        parsed = markdown_to_resume(edited_md)
+    except Exception as e:
+        logger.exception("markdown_parse_failed")
+        raise HTTPException(status_code=500, detail=f"AI 返回的 Markdown 解析失败: {str(e)}")
+    resume.original_text = edited_md
+    resume.content = parsed
+    await db.commit()
+    await db.refresh(resume)
+    from app.tasks.ai_tasks import encode_resume_vector_task
+    encode_resume_vector_task.delay(resume.id)
+    return {"markdown": edited_md, "content": parsed}
 
 @router.post("/parse-file")
 async def parse_resume_file(file: UploadFile):

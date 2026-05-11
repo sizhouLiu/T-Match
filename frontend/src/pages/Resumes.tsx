@@ -3,28 +3,32 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Card, Typography, List, Button, Empty, Modal, Space, Tag, Popconfirm, message, Spin } from 'antd'
 import {
   PlusOutlined, FileTextOutlined, EditOutlined, DeleteOutlined,
-  EyeOutlined, StarOutlined, StarFilled, RobotOutlined,
+  EyeOutlined, StarOutlined, StarFilled, RobotOutlined, FileMarkdownOutlined,
 } from '@ant-design/icons'
 import { resumesApi } from '../api'
 import { useAuthStore } from '../stores/authStore'
 import ResumeEditor from '../components/ResumeEditor'
 import ResumePreview from '../components/ResumePreview'
+import MarkdownResumeEditor from '../components/MarkdownResumeEditor'
 import type { ResumeContent } from '../components/ResumeEditor'
 import type { Resume } from '../types'
 
 const { Title, Text } = Typography
 
 type ViewMode = 'list' | 'create' | 'edit' | 'preview'
+type EditMode = 'form' | 'markdown'
 
 const Resumes = () => {
   const user = useAuthStore((state) => state.user)
   const queryClient = useQueryClient()
 
   const [viewMode, setViewMode] = useState<ViewMode>('list')
+  const [editMode, setEditMode] = useState<EditMode>('form')
   const [currentResume, setCurrentResume] = useState<Resume | null>(null)
   const [aiModalVisible, setAiModalVisible] = useState(false)
   const [aiResult, setAiResult] = useState<string | null>(null)
   const [aiLoading, setAiLoading] = useState(false)
+  const [convertLoading, setConvertLoading] = useState(false)
 
   const { data: resumes, isLoading } = useQuery({
     queryKey: ['resumes'],
@@ -47,10 +51,11 @@ const Resumes = () => {
   })
 
   const updateMutation = useMutation({
-    mutationFn: (data: { id: number; title: string; content: ResumeContent }) =>
+    mutationFn: (data: { id: number; title?: string; content?: Record<string, unknown>; original_text?: string }) =>
       resumesApi.update(data.id, {
         title: data.title,
-        content: data.content as unknown as Record<string, unknown>,
+        content: data.content,
+        original_text: data.original_text,
       }),
     onSuccess: () => {
       message.success('简历更新成功')
@@ -83,12 +88,40 @@ const Resumes = () => {
 
   const handleUpdate = async (title: string, content: ResumeContent) => {
     if (!currentResume) return
-    await updateMutation.mutateAsync({ id: currentResume.id, title, content })
+    await updateMutation.mutateAsync({ id: currentResume.id, title, content: content as unknown as Record<string, unknown> })
+  }
+
+  const handleUpdateMarkdown = async (markdown: string, content: ResumeContent) => {
+    if (!currentResume) return
+    await updateMutation.mutateAsync({
+      id: currentResume.id,
+      title: currentResume.title,
+      content: content as unknown as Record<string, unknown>,
+      original_text: markdown,
+    })
   }
 
   const handleEdit = (resume: Resume) => {
     setCurrentResume(resume)
+    setEditMode('form')
     setViewMode('edit')
+  }
+
+  const handleEditMarkdown = async (resume: Resume) => {
+    setCurrentResume(resume)
+    if (resume.original_text) { setEditMode('markdown'); setViewMode('edit'); return }
+    setConvertLoading(true)
+    try {
+      const res = await resumesApi.convertToMarkdown(resume.id)
+      resume.original_text = res.markdown
+      queryClient.invalidateQueries({ queryKey: ['resumes'] })
+      setEditMode('markdown')
+      setViewMode('edit')
+    } catch {
+      message.error('Markdown 转换失败')
+    } finally {
+      setConvertLoading(false)
+    }
   }
 
   const handlePreview = (resume: Resume) => {
@@ -153,6 +186,9 @@ const Resumes = () => {
                     </Button>,
                     <Button type="text" icon={<EditOutlined />} onClick={() => handleEdit(resume)} style={{ color: '#3b82f6' }}>
                       编辑
+                    </Button>,
+                    <Button type="text" icon={<FileMarkdownOutlined />} onClick={() => handleEditMarkdown(resume)} loading={convertLoading && currentResume?.id === resume.id} style={{ color: '#8b5cf6' }}>
+                      Markdown编辑
                     </Button>,
                     <Button type="text" icon={<RobotOutlined />} onClick={() => handleAiOptimize(resume)} style={{ color: '#52c41a' }}>
                       AI优化
@@ -233,6 +269,20 @@ const Resumes = () => {
 
   // 编辑视图
   if (viewMode === 'edit' && currentResume) {
+    if (editMode === 'markdown' && currentResume.original_text) {
+      return (
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px' }}>
+          <MarkdownResumeEditor
+            resumeId={currentResume.id}
+            initialMarkdown={currentResume.original_text}
+            initialTitle={currentResume.title}
+            onSave={handleUpdateMarkdown}
+            onSwitchToForm={() => setEditMode('form')}
+            saving={updateMutation.isPending}
+          />
+        </div>
+      )
+    }
     return (
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px' }}>
         <Button type="text" onClick={() => setViewMode('list')} style={{ color: '#a1a1aa', marginBottom: 16 }}>
